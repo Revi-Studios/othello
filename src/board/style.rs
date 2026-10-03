@@ -4,6 +4,7 @@ pub struct BoardStyle {
     pub x: f32,
     pub y: f32,
 
+    pub color: Color,
     pub cell_width: f32,
 
     pub piece_radius: f32,
@@ -17,6 +18,8 @@ impl Default for BoardStyle {
         BoardStyle {
             x: 0.0,
             y: 0.0,
+
+            color: Color::from_rgba(55, 126, 33, 255),
 
             piece_radius: 32.0,
             cell_width: 80.0,

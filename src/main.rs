@@ -46,7 +46,7 @@ async fn main() {
 
         // Rendering
 
-        clear_background(Color::from_rgba(55, 126, 33, 255));
+        clear_background(Color::from_rgba(74, 58, 41, 250));
 
         board.render();
 

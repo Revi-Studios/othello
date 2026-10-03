@@ -4,6 +4,7 @@ pub mod style;
 
 use crate::board::{cell::Cell, piece::Piece, style::BoardStyle};
 use crate::render::{Render, RenderBox};
+use macroquad::shapes::draw_rectangle;
 use macroquad::{
     color::{BLACK, WHITE},
     shapes::{draw_circle, draw_line},
@@ -47,6 +48,14 @@ impl Board {
 
 impl Render for Board {
     fn render(&self) {
+        draw_rectangle(
+            self.style.x,
+            self.style.y,
+            self.style.cell_width * WIDTH as f32,
+            self.style.cell_width * HEIGHT as f32,
+            self.style.color,
+        );
+
         // Vertical Lines
         for i in 0..WIDTH + 1 {
             let x = i as f32 * self.style.cell_width + self.style.x;
@@ -70,6 +79,14 @@ impl Render for Board {
                 WIDTH as f32 * self.style.cell_width + self.style.x,
                 y,
                 self.style.line_thickness,
+                self.style.line_color,
+            );
+        }
+        for (x, y) in vec![(2.0 as f32, 2.0 as f32), (2.0, 6.0), (6.0, 2.0), (6.0, 6.0)] {
+            draw_circle(
+                self.style.cell_width * x + self.style.x,
+                self.style.cell_width * y + self.style.y,
+                self.style.line_thickness * 3.0,
                 self.style.line_color,
             );
         }
