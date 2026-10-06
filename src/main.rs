@@ -1,54 +1,63 @@
-use board::Board;
-use macroquad::{miniquad::window::quit, prelude::*, time, ui::root_ui};
+use macroquad::{miniquad::window::quit, prelude::*, ui::root_ui};
 
-use crate::{board::style::BoardStyle, render::Render};
+use crate::{
+    board::style::BoardStyle,
+    game::{Game, State},
+    render::Render,
+};
 
 mod board;
 mod config;
+mod game;
 mod render;
 
 use config::window_conf;
 #[macroquad::main(window_conf)]
 async fn main() {
-    let mut board = Board::new(BoardStyle {
+    let mut game = Game::new(BoardStyle {
         x: 20.0,
         y: 20.0,
         ..BoardStyle::default()
     });
 
-    board.start_default();
-
-    let board_box = board.render_box();
+    let board_box = game.board.render_box();
     loop {
+        clear_background(Color::from_rgba(74, 58, 41, 250));
+
         if is_key_pressed(KeyCode::Escape) {
             quit();
         }
 
         {
             let h = screen_height();
+
             if h > board_box.height {
-                board.style.y = h / 2.0 - board_box.height / 2.0
+                game.board.style.y = h / 2.0 - board_box.height / 2.0
             }
 
             if root_ui().button(vec2(h - (h - board_box.op_x()) / 2.0, 200.0), "Start Game") {
-                board.start_default();
+                game.start();
             }
             if root_ui().button(vec2(h - (h - board_box.op_x()) / 2.0, 400.0), "End Game") {
-                board.clear();
-            }
-
-            if is_mouse_button_pressed(MouseButton::Left) {
-                todo!("Add piece placing")
+                game.end();
             }
         }
 
-        println!("updating {}", time::get_time());
+        if is_mouse_button_pressed(MouseButton::Left) && game.get_state() == State::Waiting {
+            game.place(mouse_position());
+        }
 
-        // Rendering
+        draw_text(
+            format!("Turn: {}", game.turn),
+            board_box.op_x() + 10.0,
+            60.0,
+            20.0,
+            WHITE,
+        );
 
-        clear_background(Color::from_rgba(74, 58, 41, 250));
+        // println!("updating {}", time::get_time());
 
-        board.render();
+        game.board.render();
 
         next_frame().await;
     }

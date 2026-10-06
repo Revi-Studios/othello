@@ -14,20 +14,20 @@ const WIDTH: u8 = 8;
 const HEIGHT: u8 = 8;
 
 pub struct Board {
-    cells: [Cell; (WIDTH * HEIGHT) as usize],
+    pub cells: [[Cell; HEIGHT as usize]; WIDTH as usize],
     pub style: BoardStyle,
 }
 
 impl Board {
     pub fn new(style: BoardStyle) -> Board {
         Board {
-            cells: [Cell::Emty; (WIDTH * HEIGHT) as usize],
+            cells: [[Cell::Emty; HEIGHT as usize]; WIDTH as usize],
             style: style,
         }
     }
 
     pub fn clear(&mut self) {
-        self.cells.fill(Cell::Emty);
+        self.cells.iter_mut().for_each(|c| c.fill(Cell::Emty));
     }
 
     pub fn start_default(&mut self) {
@@ -39,10 +39,78 @@ impl Board {
         self.set(4, 4, Piece::White);
     }
 
-    pub fn set(&mut self, x: u8, y: u8, piece: Piece) {
-        let idx = (x + (y * WIDTH)) as usize;
+    pub fn set(&mut self, x: usize, y: usize, piece: Piece) {
+        self.cells[x][y] = Cell::Filled(piece);
+    }
 
-        self.cells[idx] = Cell::Filled(piece);
+    pub fn place(&mut self, x: usize, y: usize, piece: Piece) -> bool {
+        let Some(affected) = self.check(piece, x as i8, y as i8) else {
+            return false;
+        };
+
+        if self.cells[x][y] != Cell::Emty {
+            return false;
+        }
+
+        self.set(x, y, piece);
+
+        for (r, c) in affected {
+            self.cells[r][c] = Cell::Filled(piece);
+        }
+
+        true
+    }
+
+    /// Checks weather a piece can be place on spot (x, y). If it can, all affected piece positions get returned in `Vec<(x, y)`
+    pub fn check(&self, piece: Piece, x: i8, y: i8) -> Option<Vec<(usize, usize)>> {
+        const DIR: [(i8, i8); 8] = [
+            (-1, -1),
+            (0, -1),
+            (1, -1),
+            (-1, 0),
+            (1, 0),
+            (-1, 1),
+            (0, 1),
+            (1, 1),
+        ];
+
+        let mut affected = Vec::with_capacity(10);
+
+        for (dx, dy) in DIR {
+            let mut found: Vec<(usize, usize)> = Vec::with_capacity(8);
+
+            let mut lx = x;
+            let mut ly = y;
+
+            loop {
+                lx += dx;
+                ly += dy;
+
+                if lx >= WIDTH as i8 || lx <= 0 || ly >= HEIGHT as i8 || ly <= 0 {
+                    break;
+                }
+
+                // println!("({lx}, {ly})");
+
+                match self.cells[lx as usize][ly as usize] {
+                    Cell::Emty => break,
+                    Cell::Filled(p) => {
+                        if p == piece {
+                            affected.append(&mut found);
+                            break;
+                        }
+                        found.push((lx as usize, ly as usize));
+                    }
+                }
+            }
+        }
+
+        println!("{:?}", affected);
+        if affected.len() > 0 {
+            Some(affected)
+        } else {
+            None
+        }
     }
 }
 
@@ -91,10 +159,28 @@ impl Render for Board {
             );
         }
 
-        for idx in 0..self.cells.len() {
-            match self.cells[idx] {
-                Cell::Emty => continue,
-                Cell::Filled(piece) => draw_piece(&self.style, piece, idx as u8),
+        for x in 0..self.cells.len() {
+            for y in 0..self.cells[x].len() {
+                match self.cells[x][y] {
+                    Cell::Emty => continue,
+                    Cell::Filled(piece) => {
+                        let color = match piece {
+                            Piece::Black => BLACK,
+                            Piece::White => WHITE,
+                        };
+
+                        draw_circle(
+                            self.style.cell_width * x as f32
+                                + self.style.cell_width / 2.0
+                                + self.style.x,
+                            self.style.cell_width * y as f32
+                                + self.style.cell_width / 2.0
+                                + self.style.y,
+                            self.style.piece_radius,
+                            color,
+                        )
+                    }
+                }
             }
         }
     }
@@ -107,18 +193,4 @@ impl Render for Board {
             height: self.style.cell_width * HEIGHT as f32 + self.style.line_thickness,
         }
     }
-}
-
-fn draw_piece(style: &BoardStyle, piece: Piece, idx: u8) {
-    let color = match piece {
-        Piece::Black => BLACK,
-        Piece::White => WHITE,
-    };
-
-    draw_circle(
-        style.cell_width * (idx % WIDTH) as f32 + style.cell_width / 2.0 + style.x,
-        (idx / WIDTH) as f32 * style.cell_width + style.cell_width / 2.0 + style.y,
-        style.piece_radius,
-        color,
-    )
 }
