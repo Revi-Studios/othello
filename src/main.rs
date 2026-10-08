@@ -57,6 +57,7 @@ async fn main() {
 
         // println!("updating {}", time::get_time());
 
+        game.board.style.suggest_piece = game.turn;
         game.board.render();
 
         next_frame().await;

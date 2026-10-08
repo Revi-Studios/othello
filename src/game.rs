@@ -1,5 +1,7 @@
 #![allow(unused)]
 
+use std::cmp::Ordering;
+
 use crate::{
     board::{self, Board, piece::Piece, style::BoardStyle},
     render::Render,
@@ -34,6 +36,7 @@ impl Game {
 
     pub fn start(&mut self) {
         self.board.start_default();
+        self.board.style.render_suggest = true;
 
         // let starting_piece = if rand::random() {
         //     Piece::Black
@@ -50,6 +53,17 @@ impl Game {
 
     pub fn end(&mut self) {
         self.state = State::End;
+        self.board.style.render_suggest = false;
+
+        println!("{:?}", self.board.count());
+
+        let (black, white) = self.board.count();
+
+        match black.cmp(&white) {
+            Ordering::Greater => println!("Black won! {}/{}", black, white),
+            Ordering::Less => println!("White won! {}/{}", white, black),
+            Ordering::Equal => println!("Tie! {}/{}", black, white),
+        }
     }
 
     pub fn place(&mut self, mouse: (f32, f32)) {

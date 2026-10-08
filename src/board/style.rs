@@ -1,5 +1,7 @@
 use macroquad::color::{BLACK, Color};
 
+use crate::board::piece::Piece;
+
 pub struct BoardStyle {
     pub x: f32,
     pub y: f32,
@@ -11,6 +13,12 @@ pub struct BoardStyle {
 
     pub line_thickness: f32,
     pub line_color: Color,
+
+    pub render_suggest: bool,
+    pub suggest_piece: Piece,
+
+    pub suggest_color: Color,
+    pub suggest_radius: f32,
 }
 
 impl Default for BoardStyle {
@@ -25,6 +33,18 @@ impl Default for BoardStyle {
             cell_width: 80.0,
             line_thickness: 2.0,
             line_color: BLACK,
+
+            render_suggest: true,
+            suggest_piece: Piece::Black,
+
+            suggest_color: Color {
+                r: 0.1,
+                g: 0.1,
+                b: 0.1,
+                a: 0.5,
+            },
+
+            suggest_radius: 10.0,
         }
     }
 }

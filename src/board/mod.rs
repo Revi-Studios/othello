@@ -13,6 +13,17 @@ use macroquad::{
 const WIDTH: u8 = 8;
 const HEIGHT: u8 = 8;
 
+const DIRECTIONS: [(i8, i8); 8] = [
+    (-1, -1),
+    (0, -1),
+    (1, -1),
+    (-1, 0),
+    (1, 0),
+    (-1, 1),
+    (0, 1),
+    (1, 1),
+];
+
 pub struct Board {
     pub cells: [[Cell; HEIGHT as usize]; WIDTH as usize],
     pub style: BoardStyle,
@@ -44,7 +55,7 @@ impl Board {
     }
 
     pub fn place(&mut self, x: usize, y: usize, piece: Piece) -> bool {
-        let Some(affected) = self.check(piece, x as i8, y as i8) else {
+        let Some(affected) = self.get_affected(piece, x as i8, y as i8) else {
             return false;
         };
 
@@ -61,22 +72,45 @@ impl Board {
         true
     }
 
-    /// Checks weather a piece can be place on spot (x, y). If it can, all affected piece positions get returned in `Vec<(x, y)`
-    pub fn check(&self, piece: Piece, x: i8, y: i8) -> Option<Vec<(usize, usize)>> {
-        const DIR: [(i8, i8); 8] = [
-            (-1, -1),
-            (0, -1),
-            (1, -1),
-            (-1, 0),
-            (1, 0),
-            (-1, 1),
-            (0, 1),
-            (1, 1),
-        ];
+    /// Checks weather a piece can be place on spot (x, y). It dosn't save affected and will return as soon as it finds at least 1 affected. This should be used whenever you just want to know if a spot it a valid move.
+    pub fn check(&self, piece: Piece, x: i8, y: i8) -> bool {
+        for (dx, dy) in DIRECTIONS {
+            let mut found_one = false;
 
+            let mut lx = x;
+            let mut ly = y;
+
+            loop {
+                lx += dx;
+                ly += dy;
+
+                if lx >= WIDTH as i8 || lx < 0 || ly >= HEIGHT as i8 || ly < 0 {
+                    break;
+                }
+
+                match self.cells[lx as usize][ly as usize] {
+                    Cell::Emty => break,
+                    Cell::Filled(p) => {
+                        if p == piece {
+                            if found_one {
+                                return true;
+                            }
+                            break;
+                        }
+                        if p != piece {
+                            found_one = true;
+                        }
+                    }
+                }
+            }
+        }
+        false
+    }
+
+    pub fn get_affected(&self, piece: Piece, x: i8, y: i8) -> Option<Vec<(usize, usize)>> {
         let mut affected = Vec::with_capacity(10);
 
-        for (dx, dy) in DIR {
+        for (dx, dy) in DIRECTIONS {
             let mut found: Vec<(usize, usize)> = Vec::with_capacity(8);
 
             let mut lx = x;
@@ -86,7 +120,7 @@ impl Board {
                 lx += dx;
                 ly += dy;
 
-                if lx >= WIDTH as i8 || lx <= 0 || ly >= HEIGHT as i8 || ly <= 0 {
+                if lx >= WIDTH as i8 || lx < 0 || ly >= HEIGHT as i8 || ly < 0 {
                     break;
                 }
 
@@ -111,6 +145,20 @@ impl Board {
         } else {
             None
         }
+    }
+
+    pub fn count(&self) -> (u8, u8) {
+        let mut black = 0;
+        let mut white = 0;
+        for cell in self.cells.iter().flatten() {
+            match cell {
+                Cell::Filled(Piece::Black) => black += 1,
+                Cell::Filled(Piece::White) => white += 1,
+                _ => {}
+            }
+        }
+
+        (black, white)
     }
 }
 
@@ -137,6 +185,7 @@ impl Render for Board {
                 self.style.line_color,
             );
         }
+
         // Horizontal Lines
         for i in 0..HEIGHT + 1 {
             let y = i as f32 * self.style.cell_width + self.style.y;
@@ -150,6 +199,8 @@ impl Render for Board {
                 self.style.line_color,
             );
         }
+
+        // Decoration points
         for (x, y) in vec![(2.0 as f32, 2.0 as f32), (2.0, 6.0), (6.0, 2.0), (6.0, 6.0)] {
             draw_circle(
                 self.style.cell_width * x + self.style.x,
@@ -162,7 +213,22 @@ impl Render for Board {
         for x in 0..self.cells.len() {
             for y in 0..self.cells[x].len() {
                 match self.cells[x][y] {
-                    Cell::Emty => continue,
+                    Cell::Emty => {
+                        if self.style.render_suggest
+                            && self.check(self.style.suggest_piece, x as i8, y as i8)
+                        {
+                            draw_circle(
+                                self.style.cell_width * x as f32
+                                    + self.style.cell_width / 2.0
+                                    + self.style.x,
+                                self.style.cell_width * y as f32
+                                    + self.style.cell_width / 2.0
+                                    + self.style.y,
+                                self.style.suggest_radius,
+                                self.style.suggest_color,
+                            )
+                        }
+                    }
                     Cell::Filled(piece) => {
                         let color = match piece {
                             Piece::Black => BLACK,
