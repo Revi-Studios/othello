@@ -21,7 +21,7 @@ pub fn window_conf() -> Conf {
         update_on: Some(UpdateTrigger {
             mouse_down: true,
             touch: true,
-            specific_key: Some(vec![KeyCode::Escape]),
+            specific_key: Some(vec![KeyCode::Escape, KeyCode::Left, KeyCode::Right]),
             ..Default::default()
         }),
 

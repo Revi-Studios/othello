@@ -1,9 +1,20 @@
-use std::fmt::Display;
+use std::{fmt::Display, ops::Not};
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Piece {
     Black,
     White,
+}
+
+impl Not for Piece {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        match self {
+            Piece::Black => Piece::White,
+            Piece::White => Piece::Black,
+        }
+    }
 }
 
 impl Display for Piece {

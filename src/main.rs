@@ -1,4 +1,9 @@
-use macroquad::{miniquad::window::quit, prelude::*, ui::root_ui};
+use macroquad::{
+    input::KeyCode::{Left, Right},
+    miniquad::window::quit,
+    prelude::*,
+    ui::root_ui,
+};
 
 use crate::{
     board::style::BoardStyle,
@@ -45,6 +50,13 @@ async fn main() {
 
         if is_mouse_button_pressed(MouseButton::Left) && game.get_state() == State::Waiting {
             game.place(mouse_position());
+        }
+
+        if is_key_pressed(Left) && game.get_state() == State::Waiting {
+            game.undo();
+        }
+        if is_key_pressed(Right) && game.get_state() == State::Waiting {
+            game.redo();
         }
 
         draw_text(

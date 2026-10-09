@@ -1,9 +1,15 @@
 #![allow(unused)]
 
-use std::cmp::Ordering;
+use std::{cmp::Ordering, usize};
 
 use crate::{
-    board::{self, Board, piece::Piece, style::BoardStyle},
+    board::{
+        self, Board,
+        cell::Cell::{self, Filled},
+        piece::{self, Piece},
+        style::BoardStyle,
+    },
+    game,
     render::Render,
 };
 
@@ -18,6 +24,8 @@ pub enum State {
 pub struct Game {
     pub board: Board,
     pub turn: Piece,
+    history: Vec<(usize, usize, Piece)>,
+    history_offset: usize,
     state: State,
 }
 
@@ -27,6 +35,8 @@ impl Game {
             board: Board::new(board_style),
             turn: Piece::Black,
             state: State::Start,
+            history: Vec::with_capacity(64),
+            history_offset: 0,
         }
     }
 
@@ -36,6 +46,8 @@ impl Game {
 
     pub fn start(&mut self) {
         self.board.start_default();
+        self.history.clear();
+        self.history_offset = 0;
         self.board.style.render_suggest = true;
 
         // let starting_piece = if rand::random() {
@@ -78,28 +90,56 @@ impl Game {
             return;
         }
 
-        println!("{x}, {y}");
-        println!(
-            "{}, {}",
-            (x / self.board.style.cell_width),
-            (y / self.board.style.cell_width)
-        );
-        println!(
-            "{}, {}",
-            (x / self.board.style.cell_width) as usize,
-            (y / self.board.style.cell_width) as usize
-        );
+        let ux = (x / self.board.style.cell_width) as usize;
+        let uy = (y / self.board.style.cell_width) as usize;
 
-        if self.board.place(
-            (x / self.board.style.cell_width) as usize,
-            (y / self.board.style.cell_width) as usize,
-            self.turn,
-        ) {
-            match self.turn {
-                Piece::Black => self.turn = Piece::White,
-                Piece::White => self.turn = Piece::Black,
-            };
+        if self.board.place(ux, uy, self.turn) {
+            if self.history_offset != 0 {
+                self.history
+                    .truncate(self.history.len().saturating_sub(self.history_offset));
+                self.history_offset = 0
+            }
+            self.history.push((ux, uy, self.turn));
+
+            self.turn = !self.turn;
         }
-        println!("{}", self.turn)
+    }
+
+    pub fn undo(&mut self) {
+        if !(self.history.len() > self.history_offset) {
+            return;
+        }
+
+        self.history_offset += 1;
+
+        self.turn = Piece::Black;
+        self.board.start_default();
+        for (x, y, piece) in self.history[0..self.history.len().saturating_sub(self.history_offset)]
+            .iter()
+            .copied()
+        {
+            println!("{x} {y} {piece}");
+            self.board.place(x, y, piece);
+            self.turn = !piece;
+        }
+
+        println!("undo: {}", self.history_offset);
+        println!("undo: {:?}", self.history);
+    }
+
+    pub fn redo(&mut self) {
+        if self.history_offset == 0 {
+            return;
+        }
+
+        self.history_offset -= 1;
+        let (x, y, piece) =
+            self.history[self.history.len().saturating_sub(self.history_offset) - 1];
+
+        self.board.place(x, y, piece);
+        self.turn = !piece;
+
+        println!("redo: {}", self.history_offset,);
+        println!("redo: {:?}", self.history);
     }
 }

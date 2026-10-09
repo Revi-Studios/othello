@@ -2,6 +2,7 @@ pub mod cell;
 pub mod piece;
 pub mod style;
 
+use crate::board::cell::Cell::Filled;
 use crate::board::{cell::Cell, piece::Piece, style::BoardStyle};
 use crate::render::{Render, RenderBox};
 use macroquad::shapes::draw_rectangle;
@@ -44,16 +45,21 @@ impl Board {
     pub fn start_default(&mut self) {
         self.clear();
 
-        self.set(3, 3, Piece::White);
-        self.set(4, 3, Piece::Black);
-        self.set(3, 4, Piece::Black);
-        self.set(4, 4, Piece::White);
+        self.set(3, 3, Filled(Piece::White));
+        self.set(4, 3, Filled(Piece::Black));
+        self.set(3, 4, Filled(Piece::Black));
+        self.set(4, 4, Filled(Piece::White));
     }
 
-    pub fn set(&mut self, x: usize, y: usize, piece: Piece) {
-        self.cells[x][y] = Cell::Filled(piece);
+    pub fn set(&mut self, x: usize, y: usize, cell: Cell) {
+        self.cells[x][y] = cell;
     }
 
+    // pub fn get(&self, x: usize, y: usize) -> Cell {
+    //     self.cells[x][y]
+    // }
+
+    /// Returns true if it was valid and placed
     pub fn place(&mut self, x: usize, y: usize, piece: Piece) -> bool {
         let Some(affected) = self.get_affected(piece, x as i8, y as i8) else {
             return false;
@@ -63,7 +69,7 @@ impl Board {
             return false;
         }
 
-        self.set(x, y, piece);
+        self.set(x, y, Filled(piece));
 
         for (r, c) in affected {
             self.cells[r][c] = Cell::Filled(piece);
