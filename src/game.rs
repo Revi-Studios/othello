@@ -27,6 +27,7 @@ pub struct Game {
     pub state: State,
     history: Vec<(usize, usize, Piece)>,
     history_offset: usize,
+
     pub black_count: u8,
     pub white_count: u8,
 }

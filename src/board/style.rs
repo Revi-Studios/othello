@@ -17,8 +17,12 @@ pub struct BoardStyle {
     pub line_color: Color,
 
     pub render_suggest: bool,
-    pub suggest_piece: Piece,
+    pub render_last: bool,
 
+    pub last_color: Color,
+    pub last_radius: f32,
+
+    pub suggest_piece: Piece,
     pub suggest_color: Color,
     pub suggest_radius: f32,
 }
@@ -40,16 +44,24 @@ impl Default for BoardStyle {
             line_color: BLACK,
 
             render_suggest: true,
-            suggest_piece: Piece::Black,
+            render_last: true,
 
+            last_color: Color {
+                r: 0.9,
+                g: 0.,
+                b: 0.0,
+                a: 0.9,
+            },
+            last_radius: 5.0,
+
+            suggest_piece: Piece::Black,
+            suggest_radius: 10.0,
             suggest_color: Color {
                 r: 0.1,
                 g: 0.1,
                 b: 0.1,
                 a: 0.5,
             },
-
-            suggest_radius: 10.0,
         }
     }
 }

@@ -28,6 +28,8 @@ const DIRECTIONS: [(i8, i8); 8] = [
 pub struct Board {
     pub cells: [[Cell; HEIGHT as usize]; WIDTH as usize],
     pub style: BoardStyle,
+
+    last: Option<(usize, usize)>,
 }
 
 impl Board {
@@ -35,11 +37,14 @@ impl Board {
         Board {
             cells: [[Cell::Emty; HEIGHT as usize]; WIDTH as usize],
             style: style,
+
+            last: None,
         }
     }
 
     pub fn clear(&mut self) {
         self.cells.iter_mut().for_each(|c| c.fill(Cell::Emty));
+        self.last = None;
     }
 
     pub fn start_default(&mut self) {
@@ -70,6 +75,7 @@ impl Board {
         }
 
         self.set(x, y, Filled(piece));
+        self.last = Some((x, y));
 
         for (r, c) in affected {
             self.cells[r][c] = Cell::Filled(piece);
@@ -254,6 +260,16 @@ impl Render for Board {
                     }
                 }
             }
+        }
+        if self.style.render_last && self.last.is_some() {
+            let (x, y) = self.last.unwrap();
+
+            draw_circle(
+                self.style.cell_width * x as f32 + self.style.cell_width / 2.0 + self.style.x,
+                self.style.cell_width * y as f32 + self.style.cell_width / 2.0 + self.style.y,
+                self.style.last_radius,
+                self.style.last_color,
+            )
         }
     }
 
