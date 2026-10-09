@@ -1,4 +1,4 @@
-use macroquad::color::{BLACK, Color};
+use macroquad::color::{BLACK, Color, WHITE};
 
 use crate::board::piece::Piece;
 
@@ -10,6 +10,8 @@ pub struct BoardStyle {
     pub cell_width: f32,
 
     pub piece_radius: f32,
+    pub piece_black_color: Color,
+    pub piece_white_color: Color,
 
     pub line_thickness: f32,
     pub line_color: Color,
@@ -30,6 +32,9 @@ impl Default for BoardStyle {
             color: Color::from_rgba(55, 126, 33, 255),
 
             piece_radius: 32.0,
+            piece_black_color: BLACK,
+            piece_white_color: WHITE,
+
             cell_width: 80.0,
             line_thickness: 2.0,
             line_color: BLACK,

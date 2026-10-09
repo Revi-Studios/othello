@@ -24,9 +24,11 @@ pub enum State {
 pub struct Game {
     pub board: Board,
     pub turn: Piece,
+    pub state: State,
     history: Vec<(usize, usize, Piece)>,
     history_offset: usize,
-    state: State,
+    pub black_count: u8,
+    pub white_count: u8,
 }
 
 impl Game {
@@ -37,11 +39,9 @@ impl Game {
             state: State::Start,
             history: Vec::with_capacity(64),
             history_offset: 0,
+            black_count: 0,
+            white_count: 0,
         }
-    }
-
-    pub fn get_state(&self) -> State {
-        self.state
     }
 
     pub fn start(&mut self) {
@@ -49,6 +49,7 @@ impl Game {
         self.history.clear();
         self.history_offset = 0;
         self.board.style.render_suggest = true;
+        (self.black_count, self.white_count) = self.board.count();
 
         // let starting_piece = if rand::random() {
         //     Piece::Black
@@ -102,6 +103,11 @@ impl Game {
             self.history.push((ux, uy, self.turn));
 
             self.turn = !self.turn;
+            (self.black_count, self.white_count) = self.board.count();
+
+            if self.black_count + self.white_count == 64 {
+                self.end();
+            }
         }
     }
 
