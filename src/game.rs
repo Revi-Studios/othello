@@ -13,24 +13,17 @@ use crate::{
     render::Render,
 };
 
-#[derive(Clone, Copy, PartialEq)]
-pub enum State {
-    Start,
-    Paused,
-    Waiting,
-    End,
-}
-
 pub struct Game {
     pub board: Board,
     pub turn: Piece,
-    pub state: State,
     history: Vec<(usize, usize, Piece)>,
     history_offset: usize,
 
     pub black_count: u8,
     pub white_count: u8,
     pub suggestions: bool,
+
+    pub started: bool,
 }
 
 impl Game {
@@ -38,12 +31,12 @@ impl Game {
         Game {
             board: Board::new(board_style),
             turn: Piece::Black,
-            state: State::Start,
             history: Vec::with_capacity(64),
             history_offset: 0,
             black_count: 0,
             white_count: 0,
             suggestions: true,
+            started: false,
         }
     }
 
@@ -68,13 +61,11 @@ impl Game {
         // self.turn = starting_piece;
 
         self.turn = Piece::Black;
-
-        self.state = State::Waiting;
     }
 
     pub fn end(&mut self) {
-        self.state = State::End;
         self.board.style.render_suggest = false;
+        self.started = false;
 
         println!("{:?}", self.board.count());
 
@@ -117,6 +108,7 @@ impl Game {
                 self.end();
             }
         }
+        self.started = true
     }
 
     pub fn undo(&mut self) {
