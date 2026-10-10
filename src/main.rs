@@ -45,6 +45,11 @@ async fn main() {
             quit();
         }
 
+        if is_key_pressed(KeyCode::P) {
+            game.toggle_suggestions();
+            println!("{}", game.suggestions)
+        }
+
         if is_mouse_button_pressed(MouseButton::Left) && game.state == State::Waiting {
             game.place(mouse_position());
         }

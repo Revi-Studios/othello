@@ -30,6 +30,7 @@ pub struct Game {
 
     pub black_count: u8,
     pub white_count: u8,
+    pub suggestions: bool,
 }
 
 impl Game {
@@ -42,14 +43,20 @@ impl Game {
             history_offset: 0,
             black_count: 0,
             white_count: 0,
+            suggestions: true,
         }
+    }
+
+    pub fn toggle_suggestions(&mut self) {
+        self.suggestions = !self.suggestions;
+        self.board.style.render_suggest = self.suggestions;
     }
 
     pub fn start(&mut self) {
         self.board.start_default();
         self.history.clear();
         self.history_offset = 0;
-        self.board.style.render_suggest = true;
+        self.board.style.render_suggest = self.suggestions;
         (self.black_count, self.white_count) = self.board.count();
 
         // let starting_piece = if rand::random() {
