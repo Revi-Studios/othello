@@ -60,9 +60,9 @@ impl Board {
         self.cells[x][y] = cell;
     }
 
-    // pub fn get(&self, x: usize, y: usize) -> Cell {
-    //     self.cells[x][y]
-    // }
+    pub fn get(&self, x: usize, y: usize) -> Cell {
+        self.cells[x][y]
+    }
 
     /// Returns true if it was valid and placed
     pub fn place(&mut self, x: usize, y: usize, piece: Piece) -> bool {
@@ -85,12 +85,12 @@ impl Board {
     }
 
     /// Checks weather a piece can be place on spot (x, y). It dosn't save affected and will return as soon as it finds at least 1 affected. This should be used whenever you just want to know if a spot it a valid move.
-    pub fn check(&self, piece: Piece, x: i8, y: i8) -> bool {
+    pub fn check(&self, piece: Piece, x: usize, y: usize) -> bool {
         for (dx, dy) in DIRECTIONS {
             let mut found_one = false;
 
-            let mut lx = x;
-            let mut ly = y;
+            let mut lx = x as i8;
+            let mut ly = y as i8;
 
             loop {
                 lx += dx;
@@ -114,6 +114,22 @@ impl Board {
                         }
                     }
                 }
+            }
+        }
+        false
+    }
+
+    pub fn has_moves(&self, piece: Piece) -> bool {
+        for x in 0..WIDTH as usize {
+            for y in 0..HEIGHT as usize {
+                match self.get(x, y) {
+                    Cell::Filled(_) => continue,
+                    Cell::Emty => {
+                        if self.check(piece, x, y) {
+                            return true;
+                        }
+                    }
+                };
             }
         }
         false
@@ -226,9 +242,7 @@ impl Render for Board {
             for y in 0..self.cells[x].len() {
                 match self.cells[x][y] {
                     Cell::Emty => {
-                        if self.style.render_suggest
-                            && self.check(self.style.suggest_piece, x as i8, y as i8)
-                        {
+                        if self.style.render_suggest && self.check(self.style.suggest_piece, x, y) {
                             draw_circle(
                                 self.style.cell_width * x as f32
                                     + self.style.cell_width / 2.0

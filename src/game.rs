@@ -101,10 +101,16 @@ impl Game {
             }
             self.history.push((ux, uy, self.turn));
 
-            self.turn = !self.turn;
+            if self.board.has_moves(!self.turn) {
+                self.turn = !self.turn;
+            }
+
             (self.black_count, self.white_count) = self.board.count();
 
-            if self.black_count + self.white_count == 64 {
+            if self.black_count + self.white_count == 64
+                || self.black_count == 0
+                || self.white_count == 0
+            {
                 self.end();
             }
         }
@@ -126,7 +132,9 @@ impl Game {
         {
             println!("{x} {y} {piece}");
             self.board.place(x, y, piece);
-            self.turn = !piece;
+            if self.board.has_moves(!self.turn) {
+                self.turn = !self.turn;
+            }
         }
 
         println!("undo: {}", self.history_offset);
@@ -143,7 +151,9 @@ impl Game {
             self.history[self.history.len().saturating_sub(self.history_offset) - 1];
 
         self.board.place(x, y, piece);
-        self.turn = !piece;
+        if self.board.has_moves(!self.turn) {
+            self.turn = !self.turn;
+        }
 
         println!("redo: {}", self.history_offset,);
         println!("redo: {:?}", self.history);
