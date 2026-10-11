@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Othello</title>
+		<style>
+			html,
+			body,
+			canvas {
+				margin: 0;
+				padding: 0;
+				width: 100%;
+				height: 100%;
+				overflow: hidden;
+				position: absolute;
+				background: black;
+				z-index: 0;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="glcanvas" tabindex="0" style="outline: none" autofocus></canvas>
+		<script src="mq_js_bundle.js"></script>
+		<script>
+			load("othello.wasm");
+			window.addEventListener("load", () => {
+				setTimeout(() => {
+					wasm_exports.mouse_down();
+				}, 100);
+			});
+		</script>
+	</body>
+</html>

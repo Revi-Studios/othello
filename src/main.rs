@@ -25,12 +25,16 @@ pub enum State {
     Setting,
 }
 
+const FONT_BYTES: &[u8] = include_bytes!("../assets/fonts/JosefinSans-Regular.ttf");
+
 use config::window_conf;
 #[macroquad::main(window_conf)]
 async fn main() {
+    let margin = 20.0;
+
     let mut game = Game::new(BoardStyle {
-        x: 20.0,
-        y: 20.0,
+        x: margin,
+        y: margin,
         ..BoardStyle::default()
     });
     game.board.start_default();
@@ -39,19 +43,13 @@ async fn main() {
 
     let board_box = game.board.render_box();
 
-    let font = load_ttf_font("assets/fonts/JosefinSans-Regular.ttf")
-        .await
-        .expect("Faild to load font from file");
+    set_default_font(load_ttf_font_from_bytes(FONT_BYTES).expect("Faild to load font"));
 
     loop {
         let h = screen_height();
         let w = screen_width();
 
         clear_background(Color::from_rgba(74, 58, 41, 250));
-
-        if h > board_box.height {
-            game.board.style.y = h / 2.0 - board_box.height / 2.0
-        }
 
         if is_key_pressed(KeyCode::Escape) {
             state = match state {
@@ -80,6 +78,7 @@ async fn main() {
             game.redo();
         }
 
+        // Draw Points
         {
             let m = w - (w - board_box.op_x()) / 2.0;
 
@@ -93,11 +92,10 @@ async fn main() {
 
             draw_text_ex(
                 format!("{}", game.black_count),
-                m - measure_text(format!("{}", game.black_count), Some(&font), 16, 1.0).width / 2.0,
+                m - measure_text(format!("{}", game.black_count), None, 16, 1.0).width / 2.0,
                 40.0 + game.board.style.piece_radius * 3.0,
                 TextParams {
                     color: WHITE,
-                    font: Some(&font),
                     font_size: 16,
                     ..Default::default()
                 },
@@ -113,11 +111,10 @@ async fn main() {
 
             draw_text_ex(
                 format!("{}", game.white_count),
-                m - measure_text(format!("{}", game.black_count), Some(&font), 16, 1.0).width / 2.0,
+                m - measure_text(format!("{}", game.black_count), None, 16, 1.0).width / 2.0,
                 h - (40.0 + game.board.style.piece_radius * 3.0),
                 TextParams {
                     color: WHITE,
-                    font: Some(&font),
                     font_size: 16,
                     ..Default::default()
                 },
@@ -135,7 +132,18 @@ async fn main() {
         }
 
         game.board.style.suggest_piece = game.turn;
+
+        //         let scale = (h - margin * 2.0)
+        //             .min(w - (margin * 2.0 + game.board.style.piece_radius * 2.0))
+        //             / board_box.width;
+        //
+        //         set_camera(&Camera2D {
+        //             zoom: vec2(2.0 / w * scale, 2.0 / h * scale),
+        //             target: vec2(w / (2.0 * scale), h / (2.0 * scale)),
+        //             ..Default::default()
+        //         });
         game.board.render();
+        // set_default_camera();
 
         if state == State::Intro || state == State::Paused {
             // Darkened backgroudnd
@@ -154,11 +162,10 @@ async fn main() {
 
             draw_text_ex(
                 "Othello",
-                w / 2.0 - measure_text("Othello", Some(&font), 50, 1.0).width / 2.0,
+                w / 2.0 - measure_text("Othello", None, 50, 1.0).width / 2.0,
                 200.0,
                 TextParams {
                     color: WHITE,
-                    font: Some(&font),
                     font_size: 50,
                     ..Default::default()
                 },
@@ -166,18 +173,11 @@ async fn main() {
 
             draw_text_ex(
                 format!("v{}", env!("CARGO_PKG_VERSION")),
-                w / 2.0 + measure_text("Othello", Some(&font), 50, 1.0).width / 2.0
-                    - measure_text(
-                        format!("v{}", env!("CARGO_PKG_VERSION")),
-                        Some(&font),
-                        20,
-                        1.0,
-                    )
-                    .width,
+                w / 2.0 + measure_text("Othello", None, 50, 1.0).width / 2.0
+                    - measure_text(format!("v{}", env!("CARGO_PKG_VERSION")), None, 20, 1.0).width,
                 220.0,
                 TextParams {
                     color: GRAY,
-                    font: Some(&font),
                     font_size: 20,
                     ..Default::default()
                 },
@@ -246,17 +246,16 @@ async fn main() {
 
             draw_text_ex(
                 "Settings",
-                m - measure_text("Othello", Some(&font), 50, 1.0).width / 2.0,
+                m - measure_text("Othello", None, 50, 1.0).width / 2.0,
                 110.0,
                 TextParams {
                     color: WHITE,
-                    font: Some(&font),
                     font_size: 30,
                     ..Default::default()
                 },
             );
 
-            draw_text_f("Info", s, 160.0, 15, &font);
+            draw_text_f("Info", s, 160.0, 15);
 
             draw_multiline_text_ex(
                 r"Keybinds:
@@ -273,7 +272,6 @@ async fn main() {
                 Some(1.3),
                 TextParams {
                     color: GRAY,
-                    font: Some(&font),
                     font_size: 13,
                     ..Default::default()
                 },
@@ -284,14 +282,13 @@ async fn main() {
     }
 }
 
-fn draw_text_f(text: &str, x: f32, y: f32, font_size: u16, font: &Font) {
+fn draw_text_f(text: &str, x: f32, y: f32, font_size: u16) {
     draw_text_ex(
         text,
         x,
         y,
         TextParams {
             color: WHITE,
-            font: Some(font),
             font_size: font_size,
             ..Default::default()
         },
