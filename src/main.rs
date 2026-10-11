@@ -1,6 +1,8 @@
+#[cfg(not(target_arch = "wasm32"))]
+use macroquad::miniquad::window::quit;
+
 use macroquad::{
     input::KeyCode::{Left, Right},
-    miniquad::window::quit,
     prelude::*,
     ui::root_ui,
 };
@@ -196,8 +198,11 @@ async fn main() {
                         macroquad::miniquad::window::schedule_update();
                     }
 
-                    if root_ui().button(vec2(w / 2.0 - 50.0, 330.0), "Quit Game") {
-                        quit();
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        if root_ui().button(vec2(w / 2.0 - 50.0, 330.0), "Quit Game") {
+                            quit();
+                        }
                     }
                 }
                 State::Paused => {
@@ -218,8 +223,11 @@ async fn main() {
                         macroquad::miniquad::window::schedule_update();
                     }
 
-                    if root_ui().button(vec2(w / 2.0 - 50.0, 370.0), "Quit Game") {
-                        quit();
+                    #[cfg(not(target_arch = "wasm32"))]
+                    {
+                        if root_ui().button(vec2(w / 2.0 - 50.0, 370.0), "Quit Game") {
+                            quit();
+                        }
                     }
                 }
                 _ => {}
