@@ -2,6 +2,10 @@
 
 A simple othello game built with [The Rust Programming Language](https://rust-lang.org/) using the [Macroquad](https://macroquad.rs/) immediate mode game engine.
 
+> [!TIP]
+> There is a web demo at:
+> [https://revi-studios.github.io/othello/](https://revi-studios.github.io/othello/)
+
 |                                                           |                                                               |
 | --------------------------------------------------------- | ------------------------------------------------------------- |
 | ![Game play](docs/screenshots/medium-early-medium.png)    | ![Intro](docs/screenshots/medium-medium-intro.png)            |
