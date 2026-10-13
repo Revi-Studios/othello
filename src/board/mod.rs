@@ -251,7 +251,9 @@ impl Render for Board {
                                     + self.style.cell_width / 2.0
                                     + self.style.y,
                                 self.style.suggest_radius,
-                                self.style.suggest_color,
+                                self.style
+                                    .suggest_color
+                                    .with_alpha(self.style.suggest_color.a * self.style.piece_fade),
                             )
                         }
                     }
@@ -269,7 +271,7 @@ impl Render for Board {
                                 + self.style.cell_width / 2.0
                                 + self.style.y,
                             self.style.piece_radius,
-                            color,
+                            color.with_alpha(self.style.piece_fade),
                         )
                     }
                 }

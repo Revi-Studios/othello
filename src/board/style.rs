@@ -25,6 +25,8 @@ pub struct BoardStyle {
     pub suggest_piece: Piece,
     pub suggest_color: Color,
     pub suggest_radius: f32,
+
+    pub piece_fade: f32,
 }
 
 impl Default for BoardStyle {
@@ -62,6 +64,8 @@ impl Default for BoardStyle {
                 b: 0.1,
                 a: 0.5,
             },
+
+            piece_fade: 1.0,
         }
     }
 }

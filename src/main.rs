@@ -1,3 +1,5 @@
+use std::cmp::Ordering;
+
 #[cfg(not(target_arch = "wasm32"))]
 use macroquad::miniquad::window::quit;
 
@@ -55,8 +57,12 @@ async fn main() {
 
         match state {
             State::Turn => {
-                if is_mouse_button_pressed(MouseButton::Left) && state == State::Turn {
+                if is_mouse_button_pressed(MouseButton::Left) {
                     game.place(mouse_position());
+                    if !game.started {
+                        game.board.style.piece_fade = 0.4;
+                        state = State::End;
+                    }
                 }
 
                 if is_key_pressed(KeyCode::Escape) {
@@ -90,10 +96,16 @@ async fn main() {
                     state = match game.started {
                         true => State::Paused,
                         false => State::Intro,
-                    }
+                    };
+                    game.board.style.piece_fade = 1.0;
                 }
             }
-            State::End => {}
+            State::End => {
+                if is_key_pressed(KeyCode::Enter) || is_key_pressed(KeyCode::Escape) {
+                    game.board.style.piece_fade = 1.0;
+                    state = State::Intro;
+                }
+            }
         }
 
         if is_key_pressed(KeyCode::P) {
@@ -112,15 +124,12 @@ async fn main() {
                 game.board.style.piece_black_color,
             );
 
-            draw_text_ex(
+            draw_text(
                 format!("{}", game.black_count),
                 m - measure_text(format!("{}", game.black_count), None, 16, 1.0).width / 2.0,
                 40.0 + game.board.style.piece_radius * 3.0,
-                TextParams {
-                    color: WHITE,
-                    font_size: 16,
-                    ..Default::default()
-                },
+                16.0,
+                WHITE,
             );
 
             // White side
@@ -131,15 +140,12 @@ async fn main() {
                 game.board.style.piece_white_color,
             );
 
-            draw_text_ex(
+            draw_text(
                 format!("{}", game.white_count),
                 m - measure_text(format!("{}", game.black_count), None, 16, 1.0).width / 2.0,
                 h - (40.0 + game.board.style.piece_radius * 3.0),
-                TextParams {
-                    color: WHITE,
-                    font_size: 16,
-                    ..Default::default()
-                },
+                16.0,
+                WHITE,
             );
 
             draw_circle(
@@ -202,6 +208,7 @@ async fn main() {
 
                     if root_ui().button(vec2(w / 2.0 - 50.0, 290.0), "Settings") {
                         state = State::Setting;
+                        game.board.style.piece_fade = 0.4;
                         macroquad::miniquad::window::schedule_update();
                     }
 
@@ -227,6 +234,7 @@ async fn main() {
 
                     if root_ui().button(vec2(w / 2.0 - 50.0, 330.0), "Settings") {
                         state = State::Setting;
+                        game.board.style.piece_fade = 0.4;
                         macroquad::miniquad::window::schedule_update();
                     }
 
@@ -284,6 +292,68 @@ async fn main() {
                     ..Default::default()
                 },
             );
+        }
+
+        if state == State::End {
+            background(Color {
+                r: 0.0,
+                g: 0.0,
+                b: 0.0,
+                a: 0.5,
+            });
+
+            let text = match game.black_count.cmp(&game.white_count) {
+                Ordering::Greater => "Black won",
+                Ordering::Less => "White won",
+                Ordering::Equal => "Tie",
+            };
+
+            let s = w / 2.0 - 100.0;
+
+            draw_text(
+                text,
+                w / 2.0 - measure_text(text, None, 30, 1.0).width / 2.0,
+                100.0,
+                30.0,
+                WHITE,
+            );
+
+            let draw_point = |piece: Piece, y: f32| {
+                draw_circle(
+                    s,
+                    y + game.board.style.piece_radius,
+                    game.board.style.piece_radius,
+                    match piece {
+                        Piece::Black => game.board.style.piece_black_color,
+                        Piece::White => game.board.style.piece_white_color,
+                    },
+                );
+
+                draw_text(
+                    format!(
+                        "{}",
+                        match piece {
+                            Piece::Black => game.black_count,
+                            Piece::White => game.white_count,
+                        }
+                    ),
+                    s + game.board.style.piece_radius + 30.0,
+                    y + game.board.style.piece_radius,
+                    18.0,
+                    WHITE,
+                );
+            };
+
+            match game.black_count.cmp(&game.white_count) {
+                Ordering::Greater | Ordering::Equal => {
+                    draw_point(Piece::Black, 170.0);
+                    draw_point(Piece::White, 270.0);
+                }
+                Ordering::Less => {
+                    draw_point(Piece::White, 170.0);
+                    draw_point(Piece::Black, 270.0);
+                }
+            };
         }
 
         next_frame().await;

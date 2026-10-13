@@ -68,14 +68,6 @@ impl Game {
         self.started = false;
 
         println!("{:?}", self.board.count());
-
-        let (black, white) = self.board.count();
-
-        match black.cmp(&white) {
-            Ordering::Greater => println!("Black won! {}/{}", black, white),
-            Ordering::Less => println!("White won! {}/{}", white, black),
-            Ordering::Equal => println!("Tie! {}/{}", black, white),
-        }
     }
 
     pub fn place(&mut self, mouse: (f32, f32)) {
@@ -112,6 +104,7 @@ impl Game {
                 || self.white_count == 0
             {
                 self.end();
+                return;
             }
         }
         self.started = true
