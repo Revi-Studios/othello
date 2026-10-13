@@ -5,6 +5,8 @@ A simple othello game built with [The Rust Programming Language](https://rust-la
 > [!TIP]
 > There is a web demo at:
 > [https://revi-studios.github.io/othello/](https://revi-studios.github.io/othello/)
+>
+> There is also a [Roadmap](docs/ROADMAP.md)
 
 |                                                           |                                                               |
 | --------------------------------------------------------- | ------------------------------------------------------------- |
