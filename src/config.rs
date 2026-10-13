@@ -26,6 +26,7 @@ pub fn window_conf() -> Conf {
                 KeyCode::Left,
                 KeyCode::Right,
                 KeyCode::P,
+                KeyCode::Enter,
             ]),
             ..Default::default()
         }),

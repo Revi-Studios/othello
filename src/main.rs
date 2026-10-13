@@ -53,31 +53,51 @@ async fn main() {
 
         clear_background(Color::from_rgba(74, 58, 41, 250));
 
-        if is_key_pressed(KeyCode::Escape) {
-            state = match state {
-                State::Paused => State::Turn,
-                _ => match game.started {
-                    true => State::Paused,
-                    false => State::Intro,
-                },
+        match state {
+            State::Turn => {
+                if is_mouse_button_pressed(MouseButton::Left) && state == State::Turn {
+                    game.place(mouse_position());
+                }
+
+                if is_key_pressed(KeyCode::Escape) {
+                    state = match game.started {
+                        true => State::Paused,
+                        false => State::Intro,
+                    }
+                }
+
+                if is_key_pressed(Left) {
+                    game.undo();
+                }
+
+                if is_key_pressed(Right) {
+                    game.redo();
+                }
             }
+            State::Intro => {
+                if is_key_pressed(KeyCode::Enter) {
+                    game.start();
+                    state = State::Turn;
+                }
+            }
+            State::Paused => {
+                if is_key_pressed(KeyCode::Enter) || is_key_pressed(KeyCode::Escape) {
+                    state = State::Turn;
+                }
+            }
+            State::Setting => {
+                if is_key_pressed(KeyCode::Escape) {
+                    state = match game.started {
+                        true => State::Paused,
+                        false => State::Intro,
+                    }
+                }
+            }
+            State::End => {}
         }
 
         if is_key_pressed(KeyCode::P) {
             game.toggle_suggestions();
-            println!("{}", game.suggestions)
-        }
-
-        if is_mouse_button_pressed(MouseButton::Left) && state == State::Turn {
-            game.place(mouse_position());
-        }
-
-        if is_key_pressed(Left) && state == State::Turn {
-            game.undo();
-        }
-
-        if is_key_pressed(Right) && state == State::Turn {
-            game.redo();
         }
 
         // Draw Points
@@ -135,55 +155,42 @@ async fn main() {
 
         game.board.style.suggest_piece = game.turn;
 
-        //         let scale = (h - margin * 2.0)
-        //             .min(w - (margin * 2.0 + game.board.style.piece_radius * 2.0))
-        //             / board_box.width;
-        //
-        //         set_camera(&Camera2D {
-        //             zoom: vec2(2.0 / w * scale, 2.0 / h * scale),
-        //             target: vec2(w / (2.0 * scale), h / (2.0 * scale)),
-        //             ..Default::default()
-        //         });
         game.board.render();
-        // set_default_camera();
 
         if state == State::Intro || state == State::Paused {
-            // Darkened backgroudnd
-            draw_rectangle(
-                0.0,
-                0.0,
-                w,
-                h,
-                Color {
-                    r: 0.0,
-                    g: 0.0,
-                    b: 0.0,
-                    a: 0.3,
-                },
-            );
+            background(Color {
+                r: 0.0,
+                g: 0.0,
+                b: 0.0,
+                a: 0.3,
+            });
 
-            draw_text_ex(
-                "Othello",
-                w / 2.0 - measure_text("Othello", None, 50, 1.0).width / 2.0,
-                200.0,
-                TextParams {
-                    color: WHITE,
-                    font_size: 50,
-                    ..Default::default()
-                },
-            );
+            // Title
+            {
+                draw_text_ex(
+                    "Othello",
+                    w / 2.0 - measure_text("Othello", None, 50, 1.0).width / 2.0,
+                    200.0,
+                    TextParams {
+                        color: WHITE,
+                        font_size: 50,
+                        ..Default::default()
+                    },
+                );
 
-            draw_text_ex(
-                format!("v{}", env!("CARGO_PKG_VERSION")),
-                w / 2.0 + measure_text("Othello", None, 50, 1.0).width / 2.0
-                    - measure_text(format!("v{}", env!("CARGO_PKG_VERSION")), None, 20, 1.0).width,
-                220.0,
-                TextParams {
-                    color: GRAY,
-                    font_size: 20,
-                    ..Default::default()
-                },
-            );
+                draw_text_ex(
+                    format!("v{}", env!("CARGO_PKG_VERSION")),
+                    w / 2.0 + measure_text("Othello", None, 50, 1.0).width / 2.0
+                        - measure_text(format!("v{}", env!("CARGO_PKG_VERSION")), None, 20, 1.0)
+                            .width,
+                    220.0,
+                    TextParams {
+                        color: GRAY,
+                        font_size: 20,
+                        ..Default::default()
+                    },
+                );
+            }
 
             match state {
                 State::Intro => {
@@ -235,19 +242,12 @@ async fn main() {
         }
 
         if state == State::Setting {
-            // Dark background
-            draw_rectangle(
-                0.0,
-                0.0,
-                w,
-                h,
-                Color {
-                    r: 0.0,
-                    g: 0.0,
-                    b: 0.0,
-                    a: 0.5,
-                },
-            );
+            background(Color {
+                r: 0.0,
+                g: 0.0,
+                b: 0.0,
+                a: 0.5,
+            });
 
             let m = w / 2.0;
             let s = m - 180.0;
@@ -263,7 +263,7 @@ async fn main() {
                 },
             );
 
-            draw_text_f("Info", s, 160.0, 15);
+            draw_text("Info", s, 160.0, 15.0, WHITE);
 
             draw_multiline_text_ex(
                 r"Keybinds:
@@ -290,15 +290,6 @@ async fn main() {
     }
 }
 
-fn draw_text_f(text: &str, x: f32, y: f32, font_size: u16) {
-    draw_text_ex(
-        text,
-        x,
-        y,
-        TextParams {
-            color: WHITE,
-            font_size: font_size,
-            ..Default::default()
-        },
-    );
+fn background(color: Color) {
+    draw_rectangle(0.0, 0.0, screen_width(), screen_height(), color);
 }
