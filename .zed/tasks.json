@@ -38,4 +38,17 @@
 		"show_command": true,
 		"save": "none",
 	},
+	{
+		"label": "Build All",
+		"command": "cargo build --release --target wasm32-unknown-unknown && cp ~/.cargo/shared_target/wasm32-unknown-unknown/release/othello.wasm docs/web-demo/",
+		"use_new_terminal": false,
+		"allow_concurrent_runs": false,
+		"reveal": "always",
+		"reveal_target": "dock",
+		"hide": "never",
+		"shell": "system",
+		"show_summary": true,
+		"show_command": true,
+		"save": "none",
+	},
 ]

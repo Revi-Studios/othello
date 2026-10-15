@@ -117,10 +117,12 @@ async fn main() {
             let m = w - (w - board_box.op_x()) / 2.0;
 
             // Black side
-            draw_circle(
+            draw_poly(
                 m,
                 40.0 + game.board.style.piece_radius,
+                35,
                 game.board.style.piece_radius,
+                0.0,
                 game.board.style.piece_black_color,
             );
 
@@ -133,10 +135,12 @@ async fn main() {
             );
 
             // White side
-            draw_circle(
+            draw_poly(
                 m,
                 h - (40.0 + game.board.style.piece_radius),
+                35,
                 game.board.style.piece_radius,
+                0.0,
                 game.board.style.piece_white_color,
             );
 
@@ -319,10 +323,12 @@ async fn main() {
             );
 
             let draw_point = |piece: Piece, y: f32| {
-                draw_circle(
+                draw_poly(
                     s,
                     y + game.board.style.piece_radius,
+                    35,
                     game.board.style.piece_radius,
+                    0.0,
                     match piece {
                         Piece::Black => game.board.style.piece_black_color,
                         Piece::White => game.board.style.piece_white_color,

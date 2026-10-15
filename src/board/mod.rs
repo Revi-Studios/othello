@@ -5,7 +5,7 @@ pub mod style;
 use crate::board::cell::Cell::Filled;
 use crate::board::{cell::Cell, piece::Piece, style::BoardStyle};
 use crate::render::{Render, RenderBox};
-use macroquad::shapes::draw_rectangle;
+use macroquad::shapes::{draw_poly, draw_rectangle};
 use macroquad::{
     color::{BLACK, WHITE},
     shapes::{draw_circle, draw_line},
@@ -263,14 +263,16 @@ impl Render for Board {
                             Piece::White => WHITE,
                         };
 
-                        draw_circle(
+                        draw_poly(
                             self.style.cell_width * x as f32
                                 + self.style.cell_width / 2.0
                                 + self.style.x,
                             self.style.cell_width * y as f32
                                 + self.style.cell_width / 2.0
                                 + self.style.y,
+                            35,
                             self.style.piece_radius,
+                            0.0,
                             color.with_alpha(self.style.piece_fade),
                         )
                     }
