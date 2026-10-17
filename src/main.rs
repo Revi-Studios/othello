@@ -59,6 +59,10 @@ async fn main() {
             State::Turn => {
                 if is_mouse_button_pressed(MouseButton::Left) {
                     game.place(mouse_position());
+                    if game.ended {
+                        game.board.style.render_fade = true;
+                        state = State::End;
+                    }
                 }
 
                 if is_key_pressed(KeyCode::Escape) {
@@ -81,6 +85,11 @@ async fn main() {
                     game.start();
                     state = State::Turn;
                 }
+
+                #[cfg(not(target_arch = "wasm32"))]
+                if is_key_pressed(KeyCode::Escape) {
+                    quit();
+                }
             }
             State::Paused => {
                 if is_key_pressed(KeyCode::Enter) || is_key_pressed(KeyCode::Escape) {
@@ -93,12 +102,12 @@ async fn main() {
                         true => State::Paused,
                         false => State::Intro,
                     };
-                    game.board.style.piece_fade = 1.0;
+                    game.board.style.render_fade = false;
                 }
             }
             State::End => {
                 if is_key_pressed(KeyCode::Enter) || is_key_pressed(KeyCode::Escape) {
-                    game.board.style.piece_fade = 1.0;
+                    game.board.style.render_fade = false;
                     state = State::Intro;
                 }
             }
@@ -208,7 +217,7 @@ async fn main() {
 
                     if root_ui().button(vec2(w / 2.0 - 50.0, 290.0), "Settings") {
                         state = State::Setting;
-                        game.board.style.piece_fade = 0.4;
+                        game.board.style.render_fade = true;
                         macroquad::miniquad::window::schedule_update();
                     }
 
@@ -234,7 +243,7 @@ async fn main() {
 
                     if root_ui().button(vec2(w / 2.0 - 50.0, 330.0), "Settings") {
                         state = State::Setting;
-                        game.board.style.piece_fade = 0.4;
+                        game.board.style.render_fade = true;
                         macroquad::miniquad::window::schedule_update();
                     }
 
@@ -308,7 +317,8 @@ async fn main() {
                 Ordering::Equal => "Tie",
             };
 
-            let s = w / 2.0 - 100.0;
+            let s = w / 2.0;
+            let r = game.board.style.piece_radius - 10.0;
 
             draw_text(
                 text,
@@ -318,12 +328,27 @@ async fn main() {
                 WHITE,
             );
 
+            draw_text("Well played!", s - 50.0, 135.0, 15.0, GRAY);
+
             let draw_point = |piece: Piece, y: f32| {
+                draw_text(
+                    piece.to_string() + ":",
+                    s - r - 70.0,
+                    y + r,
+                    18.0,
+                    Color {
+                        r: 0.9,
+                        g: 0.9,
+                        b: 0.9,
+                        a: 1.0,
+                    },
+                );
+
                 draw_poly(
                     s,
-                    y + game.board.style.piece_radius,
+                    y + r,
                     35,
-                    game.board.style.piece_radius,
+                    r,
                     0.0,
                     match piece {
                         Piece::Black => game.board.style.piece_black_color,
@@ -339,8 +364,8 @@ async fn main() {
                             Piece::White => game.white_count,
                         }
                     ),
-                    s + game.board.style.piece_radius + 30.0,
-                    y + game.board.style.piece_radius,
+                    s + r + 30.0,
+                    y + r,
                     18.0,
                     WHITE,
                 );
@@ -348,12 +373,12 @@ async fn main() {
 
             match game.black_count.cmp(&game.white_count) {
                 Ordering::Greater | Ordering::Equal => {
-                    draw_point(Piece::Black, 170.0);
-                    draw_point(Piece::White, 270.0);
+                    draw_point(Piece::Black, 200.0);
+                    draw_point(Piece::White, 275.0);
                 }
                 Ordering::Less => {
-                    draw_point(Piece::White, 170.0);
-                    draw_point(Piece::Black, 270.0);
+                    draw_point(Piece::White, 200.0);
+                    draw_point(Piece::Black, 275.0);
                 }
             };
         }

@@ -192,6 +192,7 @@ impl Board {
 
 impl Render for Board {
     fn render(&self) {
+        // Board
         draw_rectangle(
             self.style.x,
             self.style.y,
@@ -238,8 +239,14 @@ impl Render for Board {
             );
         }
 
+        // Pieces
         for x in 0..self.cells.len() {
             for y in 0..self.cells[x].len() {
+                let fade = match self.style.render_fade {
+                    true => self.style.piece_fade,
+                    false => 1.0,
+                };
+
                 match self.cells[x][y] {
                     Cell::Emty => {
                         if self.style.render_suggest && self.check(self.style.suggest_piece, x, y) {
@@ -253,7 +260,7 @@ impl Render for Board {
                                 self.style.suggest_radius,
                                 self.style
                                     .suggest_color
-                                    .with_alpha(self.style.suggest_color.a * self.style.piece_fade),
+                                    .with_alpha(self.style.suggest_color.a * fade),
                             )
                         }
                     }
@@ -273,7 +280,7 @@ impl Render for Board {
                             35,
                             self.style.piece_radius,
                             0.0,
-                            color.with_alpha(self.style.piece_fade),
+                            color.with_alpha(fade),
                         )
                     }
                 }

@@ -1,15 +1,7 @@
-#![allow(unused)]
-
-use std::{cmp::Ordering, usize};
+use std::usize;
 
 use crate::{
-    board::{
-        self, Board,
-        cell::Cell::{self, Filled},
-        piece::{self, Piece},
-        style::BoardStyle,
-    },
-    game,
+    board::{Board, piece::Piece, style::BoardStyle},
     render::Render,
 };
 
@@ -24,6 +16,7 @@ pub struct Game {
     pub suggestions: bool,
 
     pub started: bool,
+    pub ended: bool,
 }
 
 impl Game {
@@ -37,6 +30,7 @@ impl Game {
             white_count: 0,
             suggestions: true,
             started: false,
+            ended: false,
         }
     }
 
@@ -47,10 +41,15 @@ impl Game {
 
     pub fn start(&mut self) {
         self.board.start_default();
+
+        // Reset history
         self.history.clear();
         self.history_offset = 0;
+
         self.board.style.render_suggest = self.suggestions;
         (self.black_count, self.white_count) = self.board.count();
+
+        self.ended = false;
 
         // let starting_piece = if rand::random() {
         //     Piece::Black
@@ -66,6 +65,7 @@ impl Game {
     pub fn end(&mut self) {
         self.board.style.render_suggest = false;
         self.started = false;
+        self.ended = true;
 
         println!("{:?}", self.board.count());
     }
@@ -93,10 +93,6 @@ impl Game {
             }
             self.history.push((ux, uy, self.turn));
 
-            if self.board.has_moves(!self.turn) {
-                self.turn = !self.turn;
-            }
-
             (self.black_count, self.white_count) = self.board.count();
 
             if self.black_count + self.white_count == 64
@@ -105,6 +101,10 @@ impl Game {
             {
                 self.end();
                 return;
+            }
+
+            if self.board.has_moves(!self.turn) {
+                self.turn = !self.turn;
             }
         }
         self.started = true
@@ -131,7 +131,6 @@ impl Game {
         }
 
         println!("undo: {}", self.history_offset);
-        println!("undo: {:?}", self.history);
     }
 
     pub fn redo(&mut self) {
@@ -149,6 +148,5 @@ impl Game {
         }
 
         println!("redo: {}", self.history_offset,);
-        println!("redo: {:?}", self.history);
     }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "othello"
-version = "0.1.1+v2"
+version = "0.1.1"
 edition = "2024"
 
 [dependencies]
