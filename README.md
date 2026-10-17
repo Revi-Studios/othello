@@ -8,10 +8,11 @@ A simple othello game built with [The Rust Programming Language](https://rust-la
 >
 > There is also a [Roadmap](docs/ROADMAP.md)
 
-|                                                           |                                                               |
-| --------------------------------------------------------- | ------------------------------------------------------------- |
-| ![Game play](docs/screenshots/medium-early-medium.png)    | ![Intro](docs/screenshots/medium-medium-intro.png)            |
-| ![Game Paused](docs/screenshots/medium-medium-paused.png) | ![Game Settings](docs/screenshots/medium-medium-settings.png) |
+|                                                    |                                                        |
+| -------------------------------------------------- | ------------------------------------------------------ |
+| ![Game Play](docs/screenshots/v0.1.1/play.png)     | ![Game Intro](docs/screenshots/v0.1.1/intro.png)       |
+| ![Game Paused](docs/screenshots/v0.1.1/paused.png) | ![Game Settings](docs/screenshots/v0.1.1/settings.png) |
+| ![Game End](docs/screenshots/v0.1.1/end.png)       |
 
 # Build
 
