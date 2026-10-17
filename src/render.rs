@@ -1,5 +1,3 @@
-#![allow(unused)]
-
 pub trait Render {
     fn render(&self);
     fn render_box(&self) -> RenderBox;

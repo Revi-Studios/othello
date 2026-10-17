@@ -59,10 +59,6 @@ async fn main() {
             State::Turn => {
                 if is_mouse_button_pressed(MouseButton::Left) {
                     game.place(mouse_position());
-                    if !game.started {
-                        game.board.style.piece_fade = 0.4;
-                        state = State::End;
-                    }
                 }
 
                 if is_key_pressed(KeyCode::Escape) {
