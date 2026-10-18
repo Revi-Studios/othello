@@ -5,7 +5,10 @@ pub mod style;
 use crate::board::cell::Cell::Filled;
 use crate::board::{cell::Cell, piece::Piece, style::BoardStyle};
 use crate::render::{Render, RenderBox};
+use macroquad::camera::{Camera2D, set_camera, set_default_camera};
+use macroquad::math::vec2;
 use macroquad::shapes::{draw_poly, draw_rectangle};
+use macroquad::window::{screen_height, screen_width};
 use macroquad::{
     color::{BLACK, WHITE},
     shapes::{draw_circle, draw_line},
@@ -188,14 +191,35 @@ impl Board {
 
         (black, white)
     }
+
+    pub fn default_render_box(&self) -> RenderBox {
+        RenderBox {
+            x: self.style.x,
+            y: self.style.y,
+            width: (self.style.cell_width * WIDTH as f32 + self.style.line_thickness),
+            height: (self.style.cell_width * HEIGHT as f32 + self.style.line_thickness),
+        }
+    }
 }
 
 impl Render for Board {
     fn render(&self) {
+        set_camera(&Camera2D {
+            zoom: vec2(
+                2.0 / screen_width() * self.style.scale,
+                2.0 / screen_height() * self.style.scale,
+            ),
+            offset: vec2(
+                -1.0 + 2.0 / screen_width() * self.style.x,
+                1.0 - 2.0 / screen_height() * self.style.y,
+            ),
+            ..Default::default()
+        });
+
         // Board
         draw_rectangle(
-            self.style.x,
-            self.style.y,
+            0.0,
+            0.0,
             self.style.cell_width * WIDTH as f32,
             self.style.cell_width * HEIGHT as f32,
             self.style.color,
@@ -203,13 +227,13 @@ impl Render for Board {
 
         // Vertical Lines
         for i in 0..WIDTH + 1 {
-            let x = i as f32 * self.style.cell_width + self.style.x;
+            let x = i as f32 * self.style.cell_width;
 
             draw_line(
                 x,
-                self.style.y,
+                0.0,
                 x,
-                self.style.y + HEIGHT as f32 * self.style.cell_width,
+                HEIGHT as f32 * self.style.cell_width,
                 self.style.line_thickness,
                 self.style.line_color,
             );
@@ -217,12 +241,12 @@ impl Render for Board {
 
         // Horizontal Lines
         for i in 0..HEIGHT + 1 {
-            let y = i as f32 * self.style.cell_width + self.style.y;
+            let y = i as f32 * self.style.cell_width;
 
             draw_line(
-                self.style.x,
+                0.0,
                 y,
-                WIDTH as f32 * self.style.cell_width + self.style.x,
+                WIDTH as f32 * self.style.cell_width,
                 y,
                 self.style.line_thickness,
                 self.style.line_color,
@@ -232,8 +256,8 @@ impl Render for Board {
         // Decoration points
         for (x, y) in vec![(2.0 as f32, 2.0 as f32), (2.0, 6.0), (6.0, 2.0), (6.0, 6.0)] {
             draw_circle(
-                self.style.cell_width * x + self.style.x,
-                self.style.cell_width * y + self.style.y,
+                self.style.cell_width * x,
+                self.style.cell_width * y,
                 self.style.line_thickness * 3.0,
                 self.style.line_color,
             );
@@ -251,12 +275,8 @@ impl Render for Board {
                     Cell::Emty => {
                         if self.style.render_suggest && self.check(self.style.suggest_piece, x, y) {
                             draw_circle(
-                                self.style.cell_width * x as f32
-                                    + self.style.cell_width / 2.0
-                                    + self.style.x,
-                                self.style.cell_width * y as f32
-                                    + self.style.cell_width / 2.0
-                                    + self.style.y,
+                                self.style.cell_width * x as f32 + self.style.cell_width / 2.0,
+                                self.style.cell_width * y as f32 + self.style.cell_width / 2.0,
                                 self.style.suggest_radius,
                                 self.style
                                     .suggest_color
@@ -271,12 +291,8 @@ impl Render for Board {
                         };
 
                         draw_poly(
-                            self.style.cell_width * x as f32
-                                + self.style.cell_width / 2.0
-                                + self.style.x,
-                            self.style.cell_width * y as f32
-                                + self.style.cell_width / 2.0
-                                + self.style.y,
+                            self.style.cell_width * x as f32 + self.style.cell_width / 2.0,
+                            self.style.cell_width * y as f32 + self.style.cell_width / 2.0,
                             35,
                             self.style.piece_radius,
                             0.0,
@@ -290,20 +306,23 @@ impl Render for Board {
             let (x, y) = self.last.unwrap();
 
             draw_circle(
-                self.style.cell_width * x as f32 + self.style.cell_width / 2.0 + self.style.x,
-                self.style.cell_width * y as f32 + self.style.cell_width / 2.0 + self.style.y,
+                self.style.cell_width * x as f32 + self.style.cell_width / 2.0,
+                self.style.cell_width * y as f32 + self.style.cell_width / 2.0,
                 self.style.last_radius,
                 self.style.last_color,
             )
         }
+        set_default_camera();
     }
 
     fn render_box(&self) -> RenderBox {
         RenderBox {
             x: self.style.x,
             y: self.style.y,
-            width: self.style.cell_width * WIDTH as f32 + self.style.line_thickness,
-            height: self.style.cell_width * HEIGHT as f32 + self.style.line_thickness,
+            width: (self.style.cell_width * WIDTH as f32 + self.style.line_thickness)
+                * self.style.scale,
+            height: (self.style.cell_width * HEIGHT as f32 + self.style.line_thickness)
+                * self.style.scale,
         }
     }
 }

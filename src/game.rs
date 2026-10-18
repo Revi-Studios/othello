@@ -82,8 +82,8 @@ impl Game {
             return;
         }
 
-        let ux = (x / self.board.style.cell_width) as usize;
-        let uy = (y / self.board.style.cell_width) as usize;
+        let ux = (x / (self.board.style.cell_width * self.board.style.scale)) as usize;
+        let uy = (y / (self.board.style.cell_width * self.board.style.scale)) as usize;
 
         if self.board.place(ux, uy, self.turn) {
             if self.history_offset != 0 {

@@ -28,6 +28,8 @@ pub struct BoardStyle {
 
     pub piece_fade: f32,
     pub render_fade: bool,
+
+    pub scale: f32,
 }
 
 impl Default for BoardStyle {
@@ -68,6 +70,8 @@ impl Default for BoardStyle {
 
             piece_fade: 0.4,
             render_fade: false,
+
+            scale: 1.0,
         }
     }
 }

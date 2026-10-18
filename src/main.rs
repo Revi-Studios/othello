@@ -45,13 +45,19 @@ async fn main() {
 
     let mut state = State::Intro;
 
-    let board_box = game.board.render_box();
+    let mut board_box;
 
     set_default_font(load_ttf_font_from_bytes(FONT_BYTES).expect("Faild to load font"));
 
     loop {
         let h = screen_height();
         let w = screen_width();
+
+        game.board.style.scale = ((h - margin * 2.0) / game.board.default_render_box().width).min(
+            (w - margin * 3.0 - game.board.style.piece_radius * 2.0)
+                / game.board.default_render_box().height,
+        );
+        board_box = game.board.render_box();
 
         clear_background(Color::from_rgba(74, 58, 41, 250));
 
@@ -106,7 +112,10 @@ async fn main() {
                 }
             }
             State::End => {
-                if is_key_pressed(KeyCode::Enter) || is_key_pressed(KeyCode::Escape) {
+                if is_key_pressed(KeyCode::Enter)
+                    || is_key_pressed(KeyCode::Escape)
+                    || is_mouse_button_pressed(MouseButton::Left)
+                {
                     game.board.style.render_fade = false;
                     state = State::Intro;
                 }
@@ -119,7 +128,7 @@ async fn main() {
 
         // Draw Points
         {
-            let m = w - (w - board_box.op_x()) / 2.0;
+            let m = w - (w - (board_box.op_x())) / 2.0;
 
             // Black side
             draw_poly(
@@ -169,6 +178,8 @@ async fn main() {
         }
 
         game.board.style.suggest_piece = game.turn;
+
+        // game.board.render();
 
         game.board.render();
 
