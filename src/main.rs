@@ -36,28 +36,38 @@ use config::window_conf;
 async fn main() {
     let margin = 20.0;
 
+    let mut state = State::Intro;
+
     let mut game = Game::new(BoardStyle {
         x: margin,
         y: margin,
         ..BoardStyle::default()
     });
-    game.board.start_default();
-
-    let mut state = State::Intro;
-
-    let mut board_box;
 
     set_default_font(load_ttf_font_from_bytes(FONT_BYTES).expect("Faild to load font"));
+    game.board.start_default();
 
     loop {
         let h = screen_height();
         let w = screen_width();
 
-        game.board.style.scale = ((h - margin * 2.0) / game.board.default_render_box().width).min(
-            (w - margin * 3.0 - game.board.style.piece_radius * 2.0)
-                / game.board.default_render_box().height,
-        );
-        board_box = game.board.render_box();
+        let vertical_mode = w >= h;
+
+        let board_box = game.board.render_box();
+
+        // game.board.style.scale = ((h - margin * 2.0) / game.board.default_render_box().width).min(
+        //     (w - margin * 3.0 - game.board.style.piece_radius * 2.0)
+        //         / game.board.default_render_box().height,
+        // );
+
+        game.board.style.scale = match vertical_mode {
+            true => ((w - margin * 3.0 - game.board.style.piece_radius * 2.0)
+                / game.board.default_render_box().width)
+                .min((h - margin * 2.0) / game.board.default_render_box().height),
+            false => ((h - margin * 3.0 - game.board.style.piece_radius * 2.0)
+                / game.board.default_render_box().height)
+                .min((w - margin * 2.0) / game.board.default_render_box().width),
+        };
 
         clear_background(Color::from_rgba(74, 58, 41, 250));
 
@@ -127,55 +137,106 @@ async fn main() {
         }
 
         // Draw Points
-        {
-            let m = w - (w - (board_box.op_x())) / 2.0;
+        match vertical_mode {
+            true => {
+                let m = w - (w - (board_box.op_x())) / 2.0;
 
-            // Black side
-            draw_poly(
-                m,
-                40.0 + game.board.style.piece_radius,
-                35,
-                game.board.style.piece_radius,
-                0.0,
-                game.board.style.piece_black_color,
-            );
+                // Black side
+                draw_poly(
+                    m,
+                    40.0 + game.board.style.piece_radius,
+                    35,
+                    game.board.style.piece_radius,
+                    0.0,
+                    game.board.style.piece_black_color,
+                );
 
-            draw_text(
-                format!("{}", game.black_count),
-                m - measure_text(format!("{}", game.black_count), None, 16, 1.0).width / 2.0,
-                40.0 + game.board.style.piece_radius * 3.0,
-                16.0,
-                WHITE,
-            );
+                draw_text(
+                    format!("{}", game.black_count),
+                    m - measure_text(format!("{}", game.black_count), None, 16, 1.0).width / 2.0,
+                    40.0 + game.board.style.piece_radius * 3.0,
+                    16.0,
+                    WHITE,
+                );
 
-            // White side
-            draw_poly(
-                m,
-                h - (40.0 + game.board.style.piece_radius),
-                35,
-                game.board.style.piece_radius,
-                0.0,
-                game.board.style.piece_white_color,
-            );
+                // White side
+                draw_poly(
+                    m,
+                    h - (40.0 + game.board.style.piece_radius),
+                    35,
+                    game.board.style.piece_radius,
+                    0.0,
+                    game.board.style.piece_white_color,
+                );
 
-            draw_text(
-                format!("{}", game.white_count),
-                m - measure_text(format!("{}", game.black_count), None, 16, 1.0).width / 2.0,
-                h - (40.0 + game.board.style.piece_radius * 3.0),
-                16.0,
-                WHITE,
-            );
+                draw_text(
+                    format!("{}", game.white_count),
+                    m - measure_text(format!("{}", game.black_count), None, 16, 1.0).width / 2.0,
+                    h - (40.0 + game.board.style.piece_radius * 3.0),
+                    16.0,
+                    WHITE,
+                );
 
-            draw_circle(
-                m,
-                match game.turn {
-                    Piece::Black => 80.0 + game.board.style.piece_radius * 3.0,
-                    Piece::White => h - (80.0 + game.board.style.piece_radius * 3.0),
-                },
-                5.0,
-                WHITE,
-            );
-        }
+                draw_circle(
+                    m,
+                    match game.turn {
+                        Piece::Black => 80.0 + game.board.style.piece_radius * 3.0,
+                        Piece::White => h - (80.0 + game.board.style.piece_radius * 3.0),
+                    },
+                    5.0,
+                    WHITE,
+                );
+            }
+            false => {
+                let m = h - (h - (board_box.op_y())) / 2.0;
+
+                // Black side
+                draw_poly(
+                    margin + game.board.style.piece_radius,
+                    m,
+                    35,
+                    game.board.style.piece_radius,
+                    0.0,
+                    game.board.style.piece_black_color,
+                );
+
+                draw_text(
+                    format!("{}", game.black_count),
+                    margin + game.board.style.piece_radius * 3.0,
+                    m - measure_text(format!("{}", game.black_count), None, 16, 1.0).width / 2.0,
+                    16.0,
+                    WHITE,
+                );
+
+                // White side
+                draw_poly(
+                    w - (margin + game.board.style.piece_radius),
+                    m,
+                    35,
+                    game.board.style.piece_radius,
+                    0.0,
+                    game.board.style.piece_white_color,
+                );
+
+                draw_text(
+                    format!("{}", game.white_count),
+                    w - (40.0 + game.board.style.piece_radius * 3.0),
+                    m - measure_text(format!("{}", game.black_count), None, 16, 1.0).width / 2.0,
+                    16.0,
+                    WHITE,
+                );
+
+                draw_circle(
+                    match game.turn {
+                        Piece::Black => 80.0 + game.board.style.piece_radius * 3.0,
+                        Piece::White => w - (80.0 + game.board.style.piece_radius * 3.0),
+                    },
+                    m,
+                    5.0,
+                    WHITE,
+                );
+            }
+        };
 
         game.board.style.suggest_piece = game.turn;
 
