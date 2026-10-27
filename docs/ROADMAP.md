@@ -18,7 +18,7 @@ Add GUI for the end of a game and an App Icon. Some minor improvments can also b
 - Add win ui
 - Add app icon
 
-## v0.1.2
+## v0.1.2 <- Latest
 
 - Proper game layout that can be resized
 
