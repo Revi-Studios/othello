@@ -1,5 +1,3 @@
-use std::usize;
-
 use crate::{
     board::{Board, piece::Piece, style::BoardStyle},
     render::Render,
